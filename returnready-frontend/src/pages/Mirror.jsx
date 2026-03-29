@@ -5,11 +5,11 @@ import { mockAnalysis } from "../services/mockData";
 
 
 const DOMAIN_COLORS = {
-  tech: "#C2410C",
-  leadership: "#92400E",
-  communication: "#D97706",
-  domain_knowledge: "#B45309",
-  other: "#78716C",
+  tech: "#A855F7",
+  leadership: "#7C3AED",
+  communication: "#C084FC",
+  domain_knowledge: "#6D28D9",
+  other: "#8B7AA8",
 };
 
 const STRENGTH_OPACITY = {
@@ -36,8 +36,8 @@ function SkillsConstellation({ skills }) {
     // Soft radial background
     const defs = svg.append("defs");
     const radial = defs.append("radialGradient").attr("id", "bg-grad");
-    radial.append("stop").attr("offset", "0%").attr("stop-color", "#F0EBE5");
-    radial.append("stop").attr("offset", "100%").attr("stop-color", "#F8F5F2");
+    radial.append("stop").attr("offset", "0%").attr("stop-color", "#1E1A3A");
+    radial.append("stop").attr("offset", "100%").attr("stop-color", "#0D0B1A");
     svg.append("rect").attr("width", W).attr("height", H)
       .attr("fill", "url(#bg-grad)").attr("rx", 16);
 
@@ -74,9 +74,9 @@ function SkillsConstellation({ skills }) {
       .enter().append("line")
       .attr("x1", (d) => d[0].x).attr("y1", (d) => d[0].y)
       .attr("x2", (d) => d[1].x).attr("y2", (d) => d[1].y)
-      .attr("stroke", "#D6C9BF")
+      .attr("stroke", "#3B2F6E")
       .attr("stroke-width", 1)
-      .attr("opacity", 0.5);
+      .attr("opacity", 0.6);
 
     // Node groups
     const nodeG = svg.selectAll("g.node")
@@ -127,8 +127,9 @@ function SkillsConstellation({ skills }) {
     // Tooltip on hover
     const tooltip = d3.select("body").append("div")
       .style("position", "fixed")
-      .style("background", "#1C1917")
-      .style("color", "#F8F5F2")
+      .style("background", "#1E1A3A")
+      .style("color", "#F3EEFF")
+      .style("border", "1px solid #A855F7")
       .style("padding", "8px 14px")
       .style("border-radius", "10px")
       .style("font-size", "13px")
@@ -171,8 +172,8 @@ function SkillsConstellation({ skills }) {
   return (
     <svg
       ref={svgRef}
-      className="w-full rounded-2xl border border-stone-200"
-      style={{ height: "420px", background: "#F0EBE5" }}
+      className="w-full rounded-2xl border border-purple-900/40"
+      style={{ height: "420px", background: "#0D0B1A" }}
     />
   );
 }
@@ -203,7 +204,7 @@ export default function Mirror() {
           ← Dashboard
         </p>
         <p className="text-muted text-xs tracking-widest uppercase mb-1">Mirror</p>
-        <h1 className="font-display text-5xl text-ink">Your Skills Constellation</h1>
+        <h1 className="font-display text-5xl text-star">Your Skills Constellation</h1>
         <p className="text-muted mt-2 text-sm">
           Node size = current strength. Hover to inspect each skill.
         </p>
@@ -231,8 +232,8 @@ export default function Mirror() {
       {/* Three columns gap analysis */}
       <div className="grid grid-cols-3 gap-4 mb-8">
         {/* Strong */}
-        <div className="bg-green-50 border border-green-200 rounded-2xl p-4">
-          <p className="text-green-700 text-xs font-semibold uppercase tracking-wider mb-3">
+        <div className="bg-purple-900/20 border border-purple-700/30 rounded-2xl p-4">
+          <p className="text-purple-300 text-xs font-semibold uppercase tracking-wider mb-3">
             ✅ Strong
           </p>
           {strong_skills.length === 0 ? (
@@ -245,8 +246,8 @@ export default function Mirror() {
         </div>
 
         {/* Needs refresh */}
-        <div className="bg-amber-50 border border-amber-200 rounded-2xl p-4">
-          <p className="text-amber-700 text-xs font-semibold uppercase tracking-wider mb-3">
+        <div className="bg-ember/10 border border-ember/20 rounded-2xl p-4">
+          <p className="text-ember text-xs font-semibold uppercase tracking-wider mb-3">
             ⚠️ Refresh
           </p>
           {decayed_skills.map((s) => (
@@ -258,34 +259,26 @@ export default function Mirror() {
         </div>
 
         {/* Missing */}
-<div className="bg-red-50 border border-red-200 rounded-2xl p-4">
-  <p className="text-red-700 text-xs font-semibold uppercase tracking-wider mb-3">
-    ❌ Missing
-  </p>
-
-  {(showAllMissing ? missing_skills : missing_skills.slice(0, 6)).map((s) => (
-    <p key={s} className="text-ink text-sm mb-1 font-medium">
-      {s}
-    </p>
-  ))}
-
-  {missing_skills.length > 6 && (
-    <p
-      className="text-muted text-xs mt-2 cursor-pointer hover:underline"
-      onClick={() => setShowAllMissing(!showAllMissing)}
-    >
-      {showAllMissing
-        ? "Show less"
-        : `+${missing_skills.length - 6} more`}
-    </p>
-  )}
-</div>
+        <div className="bg-red-900/20 border border-red-800/30 rounded-2xl p-4">
+          <p className="text-red-400 text-xs font-semibold uppercase tracking-wider mb-3">
+            ❌ Missing
+          </p>
+          {(showAllMissing ? missing_skills : missing_skills.slice(0, 6)).map((s) => (
+            <p key={s} className="text-ink text-sm mb-1 font-medium">{s}</p>
+          ))}
+          {missing_skills.length > 6 && (
+            <p className="text-muted text-xs mt-2 cursor-pointer hover:underline"
+              onClick={() => setShowAllMissing(!showAllMissing)}>
+              {showAllMissing ? "Show less" : `+${missing_skills.length - 6} more`}
+            </p>
+          )}
+        </div>
       </div>
 
       {/* CTA */}
       <button
         onClick={() => nav("/dashboard/move")}
-        className="w-full bg-terra text-sand py-4 rounded-2xl font-semibold text-lg hover:bg-orange-800 transition"
+        className="w-full bg-terra text-star py-4 rounded-2xl font-semibold text-lg hover:bg-purple-400 transition shadow-lg shadow-terra/20"
       >
         See this week's actions →
       </button>

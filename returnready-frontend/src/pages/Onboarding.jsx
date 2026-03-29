@@ -11,16 +11,15 @@ export default function Onboarding() {
   const nav = useNavigate();
   const fileRef = useRef(null);
 
-  const [step, setStep] = useState(1); // 1=upload, 2=review, 3=confirm
+  const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [fileName, setFileName] = useState("");
   const [form, setForm] = useState(null);
 
-  const inputClass = "w-full bg-white border border-stone-300 rounded-xl px-4 py-3 text-ink placeholder-muted focus:outline-none focus:border-terra transition text-sm";
+  const inputClass = "w-full bg-sand border border-purple-900/50 rounded-xl px-4 py-3 text-ink placeholder-muted focus:outline-none focus:border-terra transition text-sm";
   const labelClass = "block text-xs font-medium text-muted mb-1 uppercase tracking-wider";
 
-  // Step 1 — Upload PDF
   const handleUpload = async (file) => {
     if (!file || file.type !== "application/pdf") {
       setError("Please upload a PDF file.");
@@ -68,76 +67,66 @@ export default function Onboarding() {
       }]
     }));
 
-  // Step 3 — Submit
-  // Step 3 — Submit
-const handleSubmit = async () => {
-  setLoading(true);
-  setError("");
-
-  try {
-    const res = await onboardUser(form);
-
-    // Save user info
-    localStorage.setItem("user_id", res.data.user_id);
-    localStorage.setItem("user_name", form.name);
-
-    // Clear previous analysis data
-    localStorage.removeItem("analysis");
-    localStorage.removeItem("analysis_time");
-
-    // Navigate to dashboard
-    nav("/dashboard");
-  } catch (e) {
-    setError(e?.response?.data?.detail || "Something went wrong.");
-  } finally {
-    setLoading(false);
-  }
-};
+  const handleSubmit = async () => {
+    setLoading(true);
+    setError("");
+    try {
+      const res = await onboardUser(form);
+      localStorage.setItem("user_id", res.data.user_id);
+      localStorage.setItem("user_name", form.name);
+      localStorage.removeItem("analysis");
+      localStorage.removeItem("analysis_time");
+      nav("/dashboard");
+    } catch (e) {
+      setError(e?.response?.data?.detail || "Something went wrong.");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
-    <div className="min-h-screen bg-sand flex items-center justify-center px-4 py-12">
-      <div className="w-full max-w-xl">
+    <div className="min-h-screen bg-sand flex items-center justify-center px-4 py-12 relative overflow-hidden">
+
+      {/* Ambient blobs */}
+      <div className="absolute inset-0 pointer-events-none">
+        <div className="absolute top-0 right-0 w-80 h-80 bg-terra/8 rounded-full blur-3xl" />
+        <div className="absolute bottom-0 left-0 w-64 h-64 bg-ember/8 rounded-full blur-3xl" />
+      </div>
+
+      <div className="w-full max-w-xl relative z-10">
 
         {/* Header */}
         <div className="mb-8">
           <p className="text-terra text-sm font-semibold cursor-pointer mb-2"
             onClick={() => nav("/")}>← ReturnReady</p>
-          <h2 className="font-display text-4xl text-ink">
+          <h2 className="font-display text-4xl text-star">
             {step === 1 && "Upload your resume"}
             {step === 2 && "Review your profile"}
             {step === 3 && "Confirm & begin"}
           </h2>
           <p className="text-muted mt-1 text-sm">Step {step} of 3</p>
-          <div className="mt-4 h-1 bg-stone-200 rounded-full">
+          <div className="mt-4 h-1 bg-purple-900/40 rounded-full">
             <div className="h-1 bg-terra rounded-full transition-all duration-500"
               style={{ width: `${(step / 3) * 100}%` }} />
           </div>
         </div>
 
-        {/* STEP 1 — PDF Upload */}
+        {/* STEP 1 */}
         {step === 1 && (
           <div className="space-y-6">
             <div
               onClick={() => fileRef.current.click()}
               onDragOver={(e) => e.preventDefault()}
-              onDrop={(e) => {
-                e.preventDefault();
-                handleUpload(e.dataTransfer.files[0]);
-              }}
-              className="border-2 border-dashed border-stone-300 rounded-2xl p-12 text-center cursor-pointer hover:border-terra transition group"
+              onDrop={(e) => { e.preventDefault(); handleUpload(e.dataTransfer.files[0]); }}
+              className="border-2 border-dashed border-purple-900/50 rounded-2xl p-12 text-center cursor-pointer hover:border-terra transition group"
             >
               <div className="text-4xl mb-3">📄</div>
               <p className="text-ink font-medium group-hover:text-terra transition">
                 {fileName || "Drop your resume PDF here"}
               </p>
               <p className="text-muted text-sm mt-1">or click to browse</p>
-              <input
-                ref={fileRef}
-                type="file"
-                accept="application/pdf"
-                className="hidden"
-                onChange={(e) => handleUpload(e.target.files[0])}
-              />
+              <input ref={fileRef} type="file" accept="application/pdf" className="hidden"
+                onChange={(e) => handleUpload(e.target.files[0])} />
             </div>
 
             {loading && (
@@ -147,11 +136,9 @@ const handleSubmit = async () => {
               </div>
             )}
 
-            {error && (
-              <p className="text-red-500 text-sm bg-red-50 px-4 py-3 rounded-xl">{error}</p>
-            )}
+            {error && <p className="text-red-400 text-sm bg-red-900/20 px-4 py-3 rounded-xl">{error}</p>}
 
-            <div className="bg-surface border border-stone-200 rounded-2xl p-4">
+            <div className="bg-nebula border border-purple-900/40 rounded-2xl p-4">
               <p className="text-xs text-muted font-medium uppercase tracking-wider mb-2">What we extract</p>
               <div className="grid grid-cols-2 gap-2 text-sm text-ink">
                 <span>✦ Your skills</span>
@@ -165,10 +152,10 @@ const handleSubmit = async () => {
           </div>
         )}
 
-        {/* STEP 2 — Review extracted profile */}
+        {/* STEP 2 */}
         {step === 2 && form && (
           <div className="space-y-5">
-            <div className="bg-green-50 border border-green-200 rounded-2xl px-4 py-3 text-sm text-green-800">
+            <div className="bg-purple-900/20 border border-purple-700/40 rounded-2xl px-4 py-3 text-sm text-purple-300">
               ✅ Extracted {form.skills?.length} skills from your resume
             </div>
 
@@ -195,8 +182,8 @@ const handleSubmit = async () => {
                     <button key={r} onClick={() => updateField("gap_reason", r)}
                       className={`py-2 px-3 rounded-xl border text-xs font-medium transition ${
                         form.gap_reason === r
-                          ? "bg-terra text-sand border-terra"
-                          : "bg-white border-stone-300 text-ink hover:border-terra"
+                          ? "bg-terra text-star border-terra"
+                          : "bg-nebula border-purple-900/50 text-ink hover:border-terra"
                       }`}>
                       {r}
                     </button>
@@ -207,13 +194,12 @@ const handleSubmit = async () => {
 
             <div className="flex justify-between items-center">
               <p className="text-sm font-medium text-ink">Extracted skills</p>
-              <button onClick={addSkill}
-                className="text-xs text-terra underline">+ Add skill</button>
+              <button onClick={addSkill} className="text-xs text-terra underline">+ Add skill</button>
             </div>
 
             <div className="space-y-3 max-h-72 overflow-y-auto pr-1">
               {form.skills?.map((skill, i) => (
-                <div key={i} className="bg-white border border-stone-200 rounded-xl p-3 relative">
+                <div key={i} className="bg-nebula border border-purple-900/40 rounded-xl p-3 relative">
                   <button onClick={() => removeSkill(i)}
                     className="absolute top-2 right-3 text-muted hover:text-terra">×</button>
                   <div className="grid grid-cols-2 gap-2">
@@ -227,43 +213,37 @@ const handleSubmit = async () => {
                       {DOMAINS.map((d) => <option key={d} value={d}>{d}</option>)}
                     </select>
                     <input className={inputClass} type="number" min={1} max={5}
-                      placeholder="Proficiency 1-5"
-                      value={skill.proficiency}
+                      placeholder="Proficiency 1-5" value={skill.proficiency}
                       onChange={(e) => updateSkill(i, "proficiency", parseInt(e.target.value) || 1)} />
                     <input className={inputClass} type="number" min={0}
-                      placeholder="Years exp"
-                      value={skill.years_experience}
+                      placeholder="Years exp" value={skill.years_experience}
                       onChange={(e) => updateSkill(i, "years_experience", parseInt(e.target.value) || 0)} />
-                    <input className={inputClass} type="date"
-                      value={skill.last_used_date}
+                    <input className={inputClass} type="date" value={skill.last_used_date}
                       onChange={(e) => updateSkill(i, "last_used_date", e.target.value)} />
                   </div>
                 </div>
               ))}
             </div>
 
-            {error && (
-              <p className="text-red-500 text-sm bg-red-50 px-4 py-3 rounded-xl">{error}</p>
-            )}
+            {error && <p className="text-red-400 text-sm bg-red-900/20 px-4 py-3 rounded-xl">{error}</p>}
 
             <div className="flex gap-3">
               <button onClick={() => setStep(1)}
-                className="flex-1 border border-stone-300 text-ink py-3 rounded-xl hover:border-terra transition text-sm">
+                className="flex-1 border border-purple-900/50 text-ink py-3 rounded-xl hover:border-terra transition text-sm">
                 ← Re-upload
               </button>
-              <button onClick={() => setStep(3)}
-                disabled={!form.name || !form.email}
-                className="flex-1 bg-terra text-sand py-3 rounded-xl font-semibold hover:bg-orange-800 transition disabled:opacity-40 text-sm">
+              <button onClick={() => setStep(3)} disabled={!form.name || !form.email}
+                className="flex-1 bg-terra text-star py-3 rounded-xl font-semibold hover:bg-purple-400 transition disabled:opacity-40 text-sm">
                 Looks good →
               </button>
             </div>
           </div>
         )}
 
-        {/* STEP 3 — Confirm */}
+        {/* STEP 3 */}
         {step === 3 && form && (
           <div className="space-y-5">
-            <div className="bg-surface border border-stone-200 rounded-2xl p-5 space-y-3">
+            <div className="bg-nebula border border-purple-900/40 rounded-2xl p-5 space-y-3">
               <div className="flex justify-between text-sm">
                 <span className="text-muted">Name</span>
                 <span className="text-ink font-medium">{form.name}</span>
@@ -285,23 +265,21 @@ const handleSubmit = async () => {
             <div className="flex flex-wrap gap-2">
               {form.skills?.map((s) => (
                 <span key={s.skill_name}
-                  className="bg-terra/10 text-terra text-xs px-3 py-1 rounded-full font-medium">
+                  className="bg-terra/10 text-terra text-xs px-3 py-1 rounded-full font-medium border border-terra/20">
                   {s.skill_name}
                 </span>
               ))}
             </div>
 
-            {error && (
-              <p className="text-red-500 text-sm bg-red-50 px-4 py-3 rounded-xl">{error}</p>
-            )}
+            {error && <p className="text-red-400 text-sm bg-red-900/20 px-4 py-3 rounded-xl">{error}</p>}
 
             <div className="flex gap-3">
               <button onClick={() => setStep(2)}
-                className="flex-1 border border-stone-300 text-ink py-3 rounded-xl hover:border-terra transition text-sm">
+                className="flex-1 border border-purple-900/50 text-ink py-3 rounded-xl hover:border-terra transition text-sm">
                 ← Edit
               </button>
               <button onClick={handleSubmit} disabled={loading}
-                className="flex-1 bg-terra text-sand py-3 rounded-xl font-semibold hover:bg-orange-800 transition disabled:opacity-40">
+                className="flex-1 bg-terra text-star py-3 rounded-xl font-semibold hover:bg-purple-400 transition disabled:opacity-40">
                 {loading ? "Analyzing..." : "Begin My Return →"}
               </button>
             </div>

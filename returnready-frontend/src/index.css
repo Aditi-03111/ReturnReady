@@ -7,10 +7,10 @@
 
 body {
   font-family: 'DM Sans', sans-serif;
-  background: #F8F5F2;
-  color: #1C1917;
+  background: #0D0B1A;
+  color: #E8E0FF;
   min-height: 100vh;
 }
 ::-webkit-scrollbar { width: 6px; }
-::-webkit-scrollbar-track { background: #F0EBE5; }
-::-webkit-scrollbar-thumb { background: #C2410C; border-radius: 3px; }
+::-webkit-scrollbar-track { background: #13102A; }
+::-webkit-scrollbar-thumb { background: #A855F7; border-radius: 3px; }
