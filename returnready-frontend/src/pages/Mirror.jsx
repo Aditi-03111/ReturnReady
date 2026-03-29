@@ -289,22 +289,9 @@ export default function Mirror() {
   const nav = useNavigate();
   const [data, setData] = useState(null);
   const [showAllMissing, setShowAllMissing] = useState(false);
-  const [roleSkills, setRoleSkills] = useState({});
-
   useEffect(() => {
     const cached = localStorage.getItem("analysis");
-    const parsed = cached ? JSON.parse(cached) : mockAnalysis;
-    setData(parsed);
-
-    // Fetch role skill frequencies for the missing skills column
-    const role = parsed?.target_role;
-    if (role) {
-      const BASE = import.meta.env.VITE_API_URL || "http://localhost:8000";
-      fetch(`${BASE}/api/role-skills/${encodeURIComponent(role)}`)
-        .then(r => r.json())
-        .then(d => setRoleSkills(d.skills || {}))
-        .catch(() => {});
-    }
+    setData(cached ? JSON.parse(cached) : mockAnalysis);
   }, []);
 
   if (!data) return null;
@@ -389,17 +376,9 @@ export default function Mirror() {
           <p className="text-red-400 text-xs font-semibold uppercase tracking-wider mb-3">
             ❌ Missing
           </p>
-          {(showAllMissing ? missing_skills : missing_skills.slice(0, 6)).map((s) => {
-            const freq = roleSkills[s];
-            return (
-              <div key={s} className="mb-2">
-                <p className="text-ink text-sm font-medium">{s}</p>
-                {freq && (
-                  <p className="text-muted text-xs">{Math.round(freq * 100)}% of job postings</p>
-                )}
-              </div>
-            );
-          })}
+          {(showAllMissing ? missing_skills : missing_skills.slice(0, 6)).map((s) => (
+            <p key={s} className="text-ink text-sm mb-1 font-medium">{s}</p>
+          ))}
           {missing_skills.length > 6 && (
             <p className="text-muted text-xs mt-2 cursor-pointer hover:underline"
               onClick={() => setShowAllMissing(!showAllMissing)}>

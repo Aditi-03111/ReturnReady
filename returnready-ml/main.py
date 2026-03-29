@@ -20,7 +20,6 @@ from decay import score_all_skills
 from claude_gap import analyze_gap
 from claude_actions import generate_weekly_actions
 from embeddings import generate_user_vector, store_embedding
-from role_skills import get_role_skills
 
 # ── Setup ───────────────────────────────────────────────
 load_dotenv()
@@ -447,94 +446,6 @@ def get_stories(user_id: str):
             return {"story": None}
 
         return {"story": matches.data[0]}
-
-    except Exception as e:
-        raise HTTPException(500, str(e))
-
-
-# ── ROLE SKILLS ─────────────────────────────────────────
-@app.get("/api/role-skills/{target_role}")
-def role_skills_endpoint(target_role: str):
-    """Returns top skills for a role with their job posting frequencies."""
-    try:
-        skills = get_role_skills(target_role, top_n=10)
-        return {"role": target_role, "skills": skills}
-    except Exception as e:
-        raise HTTPException(500, str(e))
-
-# ── INTERVIEW PREP ───────────────────────────────────────@app.post("/api/interview-prep")
-def interview_prep(req: dict):
-    try:
-        target_role = req.get("target_role", "")
-        gap_reason = req.get("gap_reason", "career break")
-        gap_months = req.get("gap_months", 12)
-        decayed_skills = req.get("decayed_skills", [])
-        missing_skills = req.get("missing_skills", [])
-
-        decayed_text = ", ".join([s["skill_name"] for s in decayed_skills[:3]]) if decayed_skills else "some technical skills"
-        missing_text = ", ".join(missing_skills[:3]) if missing_skills else "some role-specific skills"
-
-        response = client.messages.create(
-            model="claude-sonnet-4-20250514",
-            max_tokens=1200,
-            system="""You are an expert interview coach for career returners.
-Generate interview prep content. Return ONLY valid JSON, no markdown, no backticks.
-Schema:
-{
-  "reframe": "2-3 sentence positive reframe of their career gap for interviews",
-  "questions": [
-    {
-      "question": "interview question string",
-      "tip": "one sentence coaching tip for answering this",
-      "category": "gap/skills/motivation"
-    }
-  ]
-}
-Generate exactly 4 questions: 2 about the gap, 1 about skills, 1 about motivation.""",
-            messages=[{
-                "role": "user",
-                "content": f"""Target role: {target_role}
-Gap reason: {gap_reason}
-Gap duration: {gap_months} months
-Skills needing refresh: {decayed_text}
-Skills to learn: {missing_text}
-
-Generate interview prep."""
-            }]
-        )
-
-        raw = response.content[0].text.strip()
-        clean = raw.replace("```json", "").replace("```", "").strip()
-        return json.loads(clean)
-
-    except Exception as e:
-        raise HTTPException(500, str(e))
-
-
-# ── GAP REFRAME ──────────────────────────────────────────
-@app.post("/api/gap-reframe")
-def gap_reframe(req: dict):
-    try:
-        gap_reason = req.get("gap_reason", "career break")
-        gap_months = req.get("gap_months", 12)
-        target_role = req.get("target_role", "")
-
-        response = client.messages.create(
-            model="claude-sonnet-4-20250514",
-            max_tokens=400,
-            system="""You are a career coach. Return ONLY a JSON array of exactly 3 strings.
-Each string is a powerful, specific way to reframe a career gap positively for interviews.
-No preamble, no explanation, just the JSON array.""",
-            messages=[{
-                "role": "user",
-                "content": f"Gap reason: {gap_reason}, duration: {gap_months} months, returning as: {target_role}. Give 3 reframes."
-            }]
-        )
-
-        raw = response.content[0].text.strip()
-        clean = raw.replace("```json", "").replace("```", "").strip()
-        reframes = json.loads(clean)
-        return {"reframes": reframes}
 
     except Exception as e:
         raise HTTPException(500, str(e))
