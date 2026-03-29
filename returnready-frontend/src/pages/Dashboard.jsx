@@ -11,22 +11,30 @@ export default function Dashboard() {
 
   const user_id = localStorage.getItem("user_id");
   const user_name = localStorage.getItem("user_name") || "there";
-
   useEffect(() => {
     if (!user_id) { nav("/onboarding"); return; }
+
     const cached = localStorage.getItem("analysis");
-    if (cached) { setData(JSON.parse(cached)); setLoading(false); return; }
+    const cacheTime = localStorage.getItem("analysis_time");
+    const cacheAge = cacheTime ? (Date.now() - parseInt(cacheTime)) / 1000 / 60 : 999;
+
+    // Use cache only if less than 30 minutes old
+    if (cached && cacheAge < 30) {
+      setData(JSON.parse(cached));
+      setLoading(false);
+      return;
+    }
+
+    // Otherwise re-fetch
     analyzeUser(user_id)
       .then((res) => {
         localStorage.setItem("analysis", JSON.stringify(res.data));
+        localStorage.setItem("analysis_time", Date.now().toString());
         setData(res.data);
       })
-      .catch(() => {
-        // Fall back to mock data so UI is never broken
-        setData(mockAnalysis);
-      })
+      .catch(() => setData(mockAnalysis))
       .finally(() => setLoading(false));
-  }, []);
+}, []);
 
   if (loading) return (
     <div className="min-h-screen bg-sand flex items-center justify-center">

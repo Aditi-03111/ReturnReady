@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import * as d3 from "d3";
 import { mockAnalysis } from "../services/mockData";
 
+
 const DOMAIN_COLORS = {
   tech: "#C2410C",
   leadership: "#92400E",
@@ -179,7 +180,7 @@ function SkillsConstellation({ skills }) {
 export default function Mirror() {
   const nav = useNavigate();
   const [data, setData] = useState(null);
-
+  const [showAllMissing, setShowAllMissing] = useState(false);
   useEffect(() => {
     const cached = localStorage.getItem("analysis");
     setData(cached ? JSON.parse(cached) : mockAnalysis);
@@ -257,17 +258,28 @@ export default function Mirror() {
         </div>
 
         {/* Missing */}
-        <div className="bg-red-50 border border-red-200 rounded-2xl p-4">
-          <p className="text-red-700 text-xs font-semibold uppercase tracking-wider mb-3">
-            ❌ Missing
-          </p>
-          {missing_skills.slice(0, 6).map((s) => (
-            <p key={s} className="text-ink text-sm mb-1 font-medium">{s}</p>
-          ))}
-          {missing_skills.length > 6 && (
-            <p className="text-muted text-xs mt-1">+{missing_skills.length - 6} more</p>
-          )}
-        </div>
+<div className="bg-red-50 border border-red-200 rounded-2xl p-4">
+  <p className="text-red-700 text-xs font-semibold uppercase tracking-wider mb-3">
+    ❌ Missing
+  </p>
+
+  {(showAllMissing ? missing_skills : missing_skills.slice(0, 6)).map((s) => (
+    <p key={s} className="text-ink text-sm mb-1 font-medium">
+      {s}
+    </p>
+  ))}
+
+  {missing_skills.length > 6 && (
+    <p
+      className="text-muted text-xs mt-2 cursor-pointer hover:underline"
+      onClick={() => setShowAllMissing(!showAllMissing)}
+    >
+      {showAllMissing
+        ? "Show less"
+        : `+${missing_skills.length - 6} more`}
+    </p>
+  )}
+</div>
       </div>
 
       {/* CTA */}
