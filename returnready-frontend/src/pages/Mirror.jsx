@@ -3,7 +3,6 @@ import { useNavigate } from "react-router-dom";
 import * as d3 from "d3";
 import { mockAnalysis } from "../services/mockData";
 
-
 const DOMAIN_COLORS = {
   tech: "#A855F7",
   leadership: "#7C3AED",
@@ -17,6 +16,114 @@ const STRENGTH_OPACITY = {
   needs_refresh: 0.65,
   heavily_decayed: 0.3,
 };
+
+// Decay timeline chart — shows how top skills have decayed over months
+function DecayTimeline({ skills }) {
+  const svgRef = useRef(null);
+
+  useEffect(() => {
+    if (!skills?.length) return;
+    const el = svgRef.current;
+    const W = el.clientWidth || 600;
+    const H = 220;
+    const margin = { top: 16, right: 20, bottom: 36, left: 40 };
+    const iW = W - margin.left - margin.right;
+    const iH = H - margin.top - margin.bottom;
+
+    d3.select(el).selectAll("*").remove();
+
+    const svg = d3.select(el)
+      .attr("viewBox", `0 0 ${W} ${H}`)
+      .attr("preserveAspectRatio", "xMidYMid meet");
+
+    svg.append("rect").attr("width", W).attr("height", H)
+      .attr("fill", "#0D0B1A").attr("rx", 16);
+
+    const g = svg.append("g").attr("transform", `translate(${margin.left},${margin.top})`);
+
+    // Take top 5 skills by months_since_used for interesting curves
+    const topSkills = [...skills]
+      .sort((a, b) => b.months_since_used - a.months_since_used)
+      .slice(0, 5);
+
+    const maxMonths = Math.max(...topSkills.map(s => s.months_since_used), 24);
+
+    const xScale = d3.scaleLinear().domain([0, maxMonths]).range([0, iW]);
+    const yScale = d3.scaleLinear().domain([0, 1]).range([iH, 0]);
+
+    // Grid lines
+    g.selectAll(".grid-y")
+      .data([0.25, 0.5, 0.75, 1.0])
+      .enter().append("line")
+      .attr("x1", 0).attr("x2", iW)
+      .attr("y1", d => yScale(d)).attr("y2", d => yScale(d))
+      .attr("stroke", "#2D2550").attr("stroke-width", 1).attr("stroke-dasharray", "3,3");
+
+    // Axes
+    g.append("g").attr("transform", `translate(0,${iH})`)
+      .call(d3.axisBottom(xScale).ticks(5).tickFormat(d => `${d}mo`))
+      .call(ax => ax.select(".domain").attr("stroke", "#3B2F6E"))
+      .call(ax => ax.selectAll("text").attr("fill", "#8B7AA8").attr("font-size", "10px"))
+      .call(ax => ax.selectAll(".tick line").attr("stroke", "#3B2F6E"));
+
+    g.append("g")
+      .call(d3.axisLeft(yScale).ticks(4).tickFormat(d => `${d * 100}%`))
+      .call(ax => ax.select(".domain").attr("stroke", "#3B2F6E"))
+      .call(ax => ax.selectAll("text").attr("fill", "#8B7AA8").attr("font-size", "10px"))
+      .call(ax => ax.selectAll(".tick line").attr("stroke", "#3B2F6E"));
+
+    // Decay curves — simulate score at each month point
+    const DECAY_RATES = { tech: 0.03, domain_knowledge: 0.02, leadership: 0.008, communication: 0.005, other: 0.015 };
+    const colorScale = d3.scaleOrdinal()
+      .domain(topSkills.map(s => s.skill_name))
+      .range(["#A855F7", "#C084FC", "#7C3AED", "#6D28D9", "#8B7AA8"]);
+
+    topSkills.forEach((skill) => {
+      const lam = DECAY_RATES[skill.domain] || 0.015;
+      const baseScore = skill.decay_score / Math.exp(-lam * skill.months_since_used);
+      const points = d3.range(0, maxMonths + 1, 1).map(m => ({
+        x: xScale(m),
+        y: yScale(Math.min(baseScore * Math.exp(-lam * m), 1))
+      }));
+
+      const line = d3.line().x(d => d.x).y(d => d.y).curve(d3.curveCatmullRom);
+
+      g.append("path")
+        .datum(points)
+        .attr("fill", "none")
+        .attr("stroke", colorScale(skill.skill_name))
+        .attr("stroke-width", 1.5)
+        .attr("opacity", 0.8)
+        .attr("d", line);
+
+      // Dot at current position
+      g.append("circle")
+        .attr("cx", xScale(skill.months_since_used))
+        .attr("cy", yScale(skill.decay_score))
+        .attr("r", 4)
+        .attr("fill", colorScale(skill.skill_name))
+        .attr("stroke", "#0D0B1A")
+        .attr("stroke-width", 2);
+    });
+
+    // Legend
+    topSkills.forEach((skill, i) => {
+      const lx = (i % 3) * (iW / 3);
+      const ly = iH + 22 + Math.floor(i / 3) * 14;
+      g.append("circle").attr("cx", lx + 5).attr("cy", ly).attr("r", 3)
+        .attr("fill", colorScale(skill.skill_name));
+      g.append("text").attr("x", lx + 12).attr("y", ly + 4)
+        .text(skill.skill_name.length > 12 ? skill.skill_name.slice(0, 11) + "…" : skill.skill_name)
+        .attr("fill", "#8B7AA8").attr("font-size", "9px").attr("font-family", "DM Sans, sans-serif");
+    });
+
+  }, [skills]);
+
+  return (
+    <svg ref={svgRef} className="w-full rounded-2xl border border-purple-900/40"
+      style={{ height: "220px", background: "#0D0B1A" }} />
+  );
+}
 
 function SkillsConstellation({ skills }) {
   const svgRef = useRef(null);
@@ -214,8 +321,7 @@ export default function Mirror() {
       <SkillsConstellation skills={scored_skills} />
 
       {/* Legend */}
-      <div className="flex gap-6 mt-4 mb-8 flex-wrap">
-        <div className="flex items-center gap-2">
+      <div className="flex gap-6 mt-4 mb-6 flex-wrap">        <div className="flex items-center gap-2">
           <div className="w-3 h-3 rounded-full bg-terra opacity-100" />
           <span className="text-muted text-xs">Strong (60%+)</span>
         </div>
@@ -227,6 +333,13 @@ export default function Mirror() {
           <div className="w-3 h-3 rounded-full bg-terra opacity-30" />
           <span className="text-muted text-xs">Heavily decayed (&lt;30%)</span>
         </div>
+      </div>
+
+      {/* Decay Timeline */}
+      <div className="mb-8">
+        <p className="text-muted text-xs uppercase tracking-widest mb-3">Skill decay over time</p>
+        <DecayTimeline skills={scored_skills} />
+        <p className="text-muted text-xs mt-2">Dots show where each skill is today. Lines show the decay curve.</p>
       </div>
 
       {/* Three columns gap analysis */}

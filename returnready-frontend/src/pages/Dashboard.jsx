@@ -175,6 +175,28 @@ export default function Dashboard() {
           </div>
         </div>
 
+        {/* Speak */}
+        <div
+          onClick={() => nav("/dashboard/speak")}
+          className="bg-nebula border border-purple-900/40 rounded-2xl p-6 cursor-pointer hover:border-terra transition group"
+        >
+          <div className="flex items-start justify-between">
+            <div>
+              <p className="text-terra text-xs font-semibold tracking-widest uppercase mb-1">Speak</p>
+              <h2 className="font-display text-2xl text-star mb-2">Interview Prep</h2>
+              <p className="text-muted text-sm leading-relaxed">
+                Practice questions tailored to your gap. Learn to reframe your story with confidence.
+              </p>
+            </div>
+            <span className="text-purple-800 group-hover:text-terra text-2xl transition ml-4">→</span>
+          </div>
+          <div className="mt-4 flex gap-2 flex-wrap">
+            {["gap", "skills", "motivation"].map((tag) => (
+              <span key={tag} className="bg-terra/10 text-terra text-xs px-3 py-1 rounded-full border border-terra/20">{tag}</span>
+            ))}
+          </div>
+        </div>
+
       </div>
 
       {/* Summary quote */}

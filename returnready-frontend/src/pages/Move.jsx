@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { mockAnalysis } from "../services/mockData";
-import { completeAction } from "../services/api";
+import { mockAnalysis, mockReframes } from "../services/mockData";
+import { completeAction, getGapReframe } from "../services/api";
 import axios from "axios";
 
 const BASE = import.meta.env.VITE_API_URL || "http://localhost:8000";
@@ -33,6 +33,7 @@ export default function Move() {
   const [loadingRoles, setLoadingRoles] = useState(true);
   const [loading, setLoading] = useState(false);
   const [week, setWeek] = useState(1);
+  const [reframes, setReframes] = useState([]);
   const [story, setStory] = useState(
     () => REENTRY_STORIES[Math.floor(Math.random() * REENTRY_STORIES.length)]
   );
@@ -66,6 +67,18 @@ export default function Move() {
         })
         .catch(() => {});
     }
+
+    // Gap reframes
+    const gap_months = d?.gap_analysis?.scored_skills?.length
+      ? Math.max(...(d.gap_analysis.scored_skills.map(s => s.months_since_used || 0)))
+      : 12;
+    getGapReframe({
+      gap_reason: localStorage.getItem("gap_reason") || "career break",
+      gap_months,
+      target_role: d?.target_role || ""
+    })
+      .then((res) => setReframes(res.data.reframes))
+      .catch(() => setReframes(mockReframes));
   }, []);
 
   const handleComplete = async (action, idx) => {
@@ -214,6 +227,24 @@ export default function Move() {
         <p className="font-display text-lg italic mb-3 text-star">"{story.quote}"</p>
         <p className="text-sm text-muted">{story.name} · {story.role}</p>
       </div>
+
+      {/* Gap reframes */}
+      {reframes.length > 0 && (
+        <div className="bg-nebula border border-purple-900/40 rounded-2xl p-6 mb-8 relative z-10">
+          <p className="text-terra text-xs font-semibold uppercase tracking-widest mb-4">
+            ✦ How to reframe your gap
+          </p>
+          <div className="space-y-3">
+            {reframes.map((r, i) => (
+              <div key={i} className="flex gap-3 text-sm">
+                <span className="text-terra mt-0.5 flex-shrink-0">"{i + 1}"</span>
+                <p className="text-ink leading-relaxed italic">"{r}"</p>
+              </div>
+            ))}
+          </div>
+          <p className="text-muted text-xs mt-4">Use these when asked about your career break in interviews.</p>
+        </div>
+      )}
 
       <button onClick={() => nav("/dashboard/witness")}
         className="w-full bg-terra text-star py-4 rounded-2xl font-semibold text-lg hover:bg-purple-400 transition shadow-lg shadow-terra/20 relative z-10">

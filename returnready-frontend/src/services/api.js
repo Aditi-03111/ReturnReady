@@ -9,3 +9,5 @@ export const analyzeUser = (user_id) => api.post("/api/analyze", { user_id });
 export const getProgress = (user_id) => api.get(`/api/progress/${user_id}`);
 export const completeAction = (action_id, user_id) =>
   api.post("/api/complete-action", { action_id, user_id });
+export const getInterviewPrep = (data) => api.post("/api/interview-prep", data);
+export const getGapReframe = (data) => api.post("/api/gap-reframe", data);

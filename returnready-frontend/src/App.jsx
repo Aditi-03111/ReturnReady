@@ -6,6 +6,7 @@ import Dashboard from "./pages/Dashboard";
 import Mirror from "./pages/Mirror";
 import Move from "./pages/Move";
 import Witness from "./pages/Witness";
+import Speak from "./pages/Speak";
 
 export default function App() {
   return (
@@ -18,6 +19,7 @@ export default function App() {
         <Route path="/dashboard/mirror" element={<Mirror />} />
         <Route path="/dashboard/move" element={<Move />} />
         <Route path="/dashboard/witness" element={<Witness />} />
+        <Route path="/dashboard/speak" element={<Speak />} />
         <Route path="*" element={<Navigate to="/" />} />
       </Routes>
     </>

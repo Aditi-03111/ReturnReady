@@ -6,6 +6,7 @@ const LINKS = [
   { label: "Mirror", path: "/dashboard/mirror" },
   { label: "Move", path: "/dashboard/move" },
   { label: "Witness", path: "/dashboard/witness" },
+  { label: "Speak", path: "/dashboard/speak" },
 ];
 
 export default function Nav() {

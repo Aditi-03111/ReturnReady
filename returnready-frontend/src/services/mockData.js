@@ -85,3 +85,35 @@ export const mockPeers = [
     match_percent: 74,
   },
 ];
+
+export const mockInterviewPrep = {
+  reframe: "My time away from the workforce gave me deep expertise in project management, prioritization under pressure, and stakeholder communication — skills that directly translate to product management. I returned more focused and with a clearer sense of the impact I want to create.",
+  questions: [
+    {
+      question: "Can you walk me through your career gap and what you did during that time?",
+      tip: "Lead with what you gained, not what you missed. Frame it as a deliberate chapter.",
+      category: "gap"
+    },
+    {
+      question: "How have you stayed current with industry trends during your break?",
+      tip: "Mention specific things — courses, projects, communities — even small ones count.",
+      category: "gap"
+    },
+    {
+      question: "Your SQL and Python skills have a gap — how would you get back up to speed?",
+      tip: "Show you already have a plan. Mention the actions you're already taking.",
+      category: "skills"
+    },
+    {
+      question: "Why are you returning to product management specifically now?",
+      tip: "Connect your personal journey to a genuine motivation. Authenticity wins here.",
+      category: "motivation"
+    }
+  ]
+};
+
+export const mockReframes = [
+  "During my career break, I managed complex caregiving logistics across multiple stakeholders — the same skill set that makes a great product manager.",
+  "I took intentional time to step back and gain perspective on what kind of work creates real impact, which has sharpened my product thinking significantly.",
+  "My gap gave me firsthand experience as a user navigating broken systems — I now bring that empathy directly into how I think about product decisions."
+];
