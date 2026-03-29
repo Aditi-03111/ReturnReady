@@ -3,6 +3,7 @@ import json
 from anthropic import Anthropic
 from dotenv import load_dotenv
 from decay import score_all_skills
+from role_skills import get_missing_skills
 
 load_dotenv()
 
@@ -26,6 +27,10 @@ def analyze_gap(skills: list[dict], target_role: str) -> dict:
     # Run decay model first
     scored_skills = score_all_skills(skills)
 
+    # Get data-driven missing skills from role frequency table
+    user_skill_names = [s["skill_name"] for s in skills]
+    data_driven_missing = get_missing_skills(user_skill_names, target_role, threshold=0.5)
+
     # Build a clean text representation for Claude
     skill_lines = []
     for s in scored_skills:
@@ -37,6 +42,7 @@ def analyze_gap(skills: list[dict], target_role: str) -> dict:
             f"current strength score: {s['decay_score']} ({s['strength_label']})"
         )
     skills_text = "\n".join(skill_lines)
+    missing_hint = ", ".join(data_driven_missing) if data_driven_missing else "none identified from job data"
 
     system_prompt = """You are a career re-entry advisor specializing in helping women return to the workforce after a career gap.
 
@@ -57,6 +63,11 @@ Be specific about missing_skills based on the actual target role. Do not make th
 Current skill profile:
 {skills_text}
 
+Skills identified as missing from real job posting data (frequency >50%):
+{missing_hint}
+
+Use the job data above as your primary source for missing_skills.
+You may add 1-2 additional missing skills if clearly relevant but not in the list.
 Analyze the gap and return the JSON."""
 
     response = client.messages.create(
